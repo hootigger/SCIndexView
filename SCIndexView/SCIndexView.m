@@ -6,7 +6,7 @@
 #define kSCIndexViewInsetTop (self.translucentForTableViewInNavigationBar ? UIApplication.sharedApplication.statusBarFrame.size.height + 44 : 0)
 
 static NSTimeInterval kAnimationDuration = 0.25;
-
+/*
 // 根据section值获取CATextLayer的中心点y值
 static inline CGFloat SCGetTextLayerCenterY(NSUInteger position, CGFloat margin, CGFloat space)
 {
@@ -24,7 +24,7 @@ static inline NSInteger SCPositionOfTextLayerInY(CGFloat y, CGFloat margin, CGFl
     CGFloat smallerCenterY = SCGetTextLayerCenterY(smaller, margin, space);
     return biggerCenterY + smallerCenterY > 2 * y ? smaller : bigger;
 }
-
+*/
 @interface SCIndexView ()
 
 @property (nonatomic, strong) CAShapeLayer *searchLayer;
@@ -66,7 +66,7 @@ static inline NSInteger SCPositionOfTextLayerInY(CGFloat y, CGFloat margin, CGFl
     [CATransaction begin];
     [CATransaction setDisableActions:YES];
     if (self.searchLayer) {
-        self.searchLayer.frame = CGRectMake(self.bounds.size.width - self.configuration.indexItemRightMargin - self.configuration.indexItemHeight, SCGetTextLayerCenterY(0, margin, space) - self.configuration.indexItemHeight / 2, self.configuration.indexItemHeight, self.configuration.indexItemHeight);
+        self.searchLayer.frame = CGRectMake(self.bounds.size.width - self.configuration.indexItemRightMargin - self.configuration.indexItemHeight, [self fix_SCGetTextLayerCenterY:0 margin:margin space:space] - self.configuration.indexItemHeight / 2, self.configuration.indexItemHeight, self.configuration.indexItemHeight);
         self.searchLayer.cornerRadius = self.configuration.indexItemHeight / 2;
         self.searchLayer.contentsScale = UIScreen.mainScreen.scale;
         self.searchLayer.backgroundColor = self.configuration.indexItemBackgroundColor.CGColor;
@@ -76,9 +76,32 @@ static inline NSInteger SCPositionOfTextLayerInY(CGFloat y, CGFloat margin, CGFl
     for (int i = 0; i < self.subTextLayers.count; i++) {
         CATextLayer *textLayer = self.subTextLayers[i];
         NSUInteger section = i + deta;
-        textLayer.frame = CGRectMake(self.bounds.size.width - self.configuration.indexItemRightMargin - self.configuration.indexItemHeight, SCGetTextLayerCenterY(section, margin, space) - self.configuration.indexItemHeight / 2, self.configuration.indexItemHeight, self.configuration.indexItemHeight);
+        textLayer.frame = CGRectMake(self.bounds.size.width - self.configuration.indexItemRightMargin - self.configuration.indexItemHeight, [self fix_SCGetTextLayerCenterY:section margin:margin space:space] - self.configuration.indexItemHeight / 2, self.configuration.indexItemHeight, self.configuration.indexItemHeight);
     }
     [CATransaction commit];
+}
+
+#pragma mark - Private Methods(Fix)
+// 根据section值获取CATextLayer的中心点y值
+- (CGFloat)fix_SCGetTextLayerCenterY:(NSUInteger) position
+                              margin:(CGFloat) margin
+                               space:(CGFloat) space
+{
+    return margin + (position + 1.0 / 2) * space + _configuration.indexInsetTop;
+}
+
+// 根据y值获取CATextLayer的section值
+- (NSInteger)fix_SCPositionOfTextLayerInY:(CGFloat) y
+                                   margin:(CGFloat) margin
+                                    space:(CGFloat) space
+{
+    CGFloat position = (y - margin) / space - 1.0 / 2;
+    if (position <= 0) return 0;
+    NSUInteger bigger = (NSUInteger)ceil(position);
+    NSUInteger smaller = bigger - 1;
+    CGFloat biggerCenterY = [self fix_SCGetTextLayerCenterY:bigger margin:margin space:space];
+    CGFloat smallerCenterY = [self fix_SCGetTextLayerCenterY:smaller margin:margin space:space];
+    return biggerCenterY + smallerCenterY > 2 * y ? smaller : bigger;
 }
 
 #pragma mark - Public Methods
@@ -124,7 +147,7 @@ static inline NSInteger SCPositionOfTextLayerInY(CGFloat y, CGFloat margin, CGFl
     [CATransaction setDisableActions:YES];
     
     if (hasSearchLayer) {
-        self.searchLayer.frame = CGRectMake(self.bounds.size.width - self.configuration.indexItemRightMargin - self.configuration.indexItemHeight, SCGetTextLayerCenterY(0, margin, space) - self.configuration.indexItemHeight / 2, self.configuration.indexItemHeight, self.configuration.indexItemHeight);
+        self.searchLayer.frame = CGRectMake(self.bounds.size.width - self.configuration.indexItemRightMargin - self.configuration.indexItemHeight, [self fix_SCGetTextLayerCenterY:0 margin:margin space:space] - self.configuration.indexItemHeight / 2, self.configuration.indexItemHeight, self.configuration.indexItemHeight);
         self.searchLayer.cornerRadius = self.configuration.indexItemHeight / 2;
         self.searchLayer.contentsScale = UIScreen.mainScreen.scale;
         self.searchLayer.backgroundColor = self.configuration.indexItemBackgroundColor.CGColor;
@@ -133,7 +156,7 @@ static inline NSInteger SCPositionOfTextLayerInY(CGFloat y, CGFloat margin, CGFl
     for (int i = 0; i < self.subTextLayers.count; i++) {
         CATextLayer *textLayer = self.subTextLayers[i];
         NSUInteger section = i + deta;
-        textLayer.frame = CGRectMake(self.bounds.size.width - self.configuration.indexItemRightMargin - self.configuration.indexItemHeight, SCGetTextLayerCenterY(section, margin, space) - self.configuration.indexItemHeight / 2, self.configuration.indexItemHeight, self.configuration.indexItemHeight);
+        textLayer.frame = CGRectMake(self.bounds.size.width - self.configuration.indexItemRightMargin - self.configuration.indexItemHeight, [self fix_SCGetTextLayerCenterY:section margin:margin space:space] - self.configuration.indexItemHeight / 2, self.configuration.indexItemHeight, self.configuration.indexItemHeight);
         textLayer.string = self.dataSource[section];
         textLayer.fontSize = self.configuration.indexItemHeight * 0.8;
         textLayer.cornerRadius = self.configuration.indexItemHeight / 2;
@@ -364,7 +387,7 @@ static inline NSInteger SCPositionOfTextLayerInY(CGFloat y, CGFloat margin, CGFl
 {
     self.touchingIndexView = YES;
     CGPoint location = [touch locationInView:self];
-    NSInteger currentPosition = SCPositionOfTextLayerInY(location.y, kSCIndexViewMargin, kSCIndexViewSpace);
+    NSInteger currentPosition = [self fix_SCPositionOfTextLayerInY:location.y margin:kSCIndexViewMargin space:kSCIndexViewSpace];
     if (currentPosition < 0 || currentPosition >= (NSInteger)self.dataSource.count) return YES;
     
     NSInteger deta = self.searchLayer ? 1 : 0;
@@ -382,7 +405,7 @@ static inline NSInteger SCPositionOfTextLayerInY(CGFloat y, CGFloat margin, CGFl
 {
     self.touchingIndexView = YES;
     CGPoint location = [touch locationInView:self];
-    NSInteger currentPosition = SCPositionOfTextLayerInY(location.y, kSCIndexViewMargin, kSCIndexViewSpace);
+    NSInteger currentPosition = [self fix_SCPositionOfTextLayerInY:location.y margin:kSCIndexViewMargin space:kSCIndexViewSpace];
     
     if (currentPosition < 0) {
         currentPosition = 0;

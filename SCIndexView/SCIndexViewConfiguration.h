@@ -28,6 +28,9 @@ typedef NS_ENUM(NSUInteger, SCIndexViewStyle) {
 @property (nonatomic, assign) CGFloat indexItemRightMargin;                 // 索引元素距离右边屏幕距离
 @property (nonatomic, assign) CGFloat indexItemsSpace;                      // 索引元素之间间隔距离
 
+//FIXME: 自己添加垂直位置可以偏移
+@property (nonatomic, assign) CGFloat indexInsetTop;                        // 索引垂直方向偏移. default 0.
+
 + (instancetype)configuration;
 
 + (instancetype)configurationWithIndexViewStyle:(SCIndexViewStyle)indexViewStyle;

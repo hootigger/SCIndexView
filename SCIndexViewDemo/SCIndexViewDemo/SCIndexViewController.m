@@ -156,6 +156,7 @@
         }
         
         SCIndexViewConfiguration *configuration = [SCIndexViewConfiguration configuration];
+        configuration.indexInsetTop = 104;
         _tableView.sc_indexViewConfiguration = configuration;
         _tableView.sc_translucentForTableViewInNavigationBar = self.translucent;
     }
