@@ -118,10 +118,14 @@ static inline NSInteger SCPositionOfTextLayerInY(CGFloat y, CGFloat margin, CGFl
     CGPoint from = hidden ? start : end;
     CGPoint to = hidden ? end : start;
 //    NSString *func = hidden ? kCAMediaTimingFunctionEaseIn : kCAMediaTimingFunctionEaseOut;
-    self.hidden = NO;
-    if (CGPointEqualToPoint(self.center, to)) {
-        return;
+    /// 不在起点移动到起点
+    if (!CGPointEqualToPoint(self.center, from)) {
+        [CATransaction begin];
+        [CATransaction setDisableActions:NO];// 关闭layer的默认动画
+        self.layer.position = from;
+        [CATransaction commit];
     }
+    self.hidden = NO;
     if (animated) {
         CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"position"];
         animation.fromValue = [NSValue valueWithCGPoint: from];
