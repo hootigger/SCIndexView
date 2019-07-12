@@ -125,7 +125,7 @@ static inline NSInteger SCPositionOfTextLayerInY(CGFloat y, CGFloat margin, CGFl
         animation.fromValue = [NSValue valueWithCGPoint: from];
         animation.toValue = [NSValue valueWithCGPoint: to];
         animation.duration = 0.25f;
-        animation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseIn];
+        animation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
         animation.delegate = self;
         animation.fillMode = kCAFillModeForwards;
         animation.removedOnCompletion = NO;
