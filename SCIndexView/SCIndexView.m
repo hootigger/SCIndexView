@@ -116,6 +116,7 @@ static inline NSInteger SCPositionOfTextLayerInY(CGFloat y, CGFloat margin, CGFl
     CGPoint end = CGPointMake(start.x + 20, start.y);
     CGPoint from = hidden ? start : end;
     CGPoint to = hidden ? end : start;
+    self.hidden = NO;
     if (CGPointEqualToPoint(self.center, to)) {
         return;
     }
@@ -134,6 +135,7 @@ static inline NSInteger SCPositionOfTextLayerInY(CGFloat y, CGFloat margin, CGFl
         [self.layer addAnimation:animation forKey:key];
     }
     else {
+        self.hidden = hidden;
         [CATransaction begin];
         [CATransaction setDisableActions:NO];// 关闭layer的默认动画
         self.layer.position = hidden ? to : from;
@@ -161,6 +163,9 @@ static inline NSInteger SCPositionOfTextLayerInY(CGFloat y, CGFloat margin, CGFl
         [CATransaction commit];
         
         NSString *key = (NSString *)[anim valueForKey:@"animationKey"];
+        if ([key isEqualToString:@"hiddenAnimationKey"]) {
+            self.hidden = YES;
+        }
         [self.layer removeAnimationForKey:key];
     }
 }
