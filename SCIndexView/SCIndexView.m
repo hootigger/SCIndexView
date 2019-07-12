@@ -112,10 +112,12 @@ static inline NSInteger SCPositionOfTextLayerInY(CGFloat y, CGFloat margin, CGFl
 
 - (void)setIndexHidden:(BOOL)hidden animated:(BOOL)animated {
     CGSize size = self.frame.size;
+    CGFloat offset = self.configuration.indexItemRightMargin + self.configuration.indexItemHeight;
     CGPoint start = CGPointMake(size.width * 0.5, size.height * 0.5);
-    CGPoint end = CGPointMake(start.x + 20, start.y);
+    CGPoint end = CGPointMake(start.x + offset, start.y);
     CGPoint from = hidden ? start : end;
     CGPoint to = hidden ? end : start;
+//    NSString *func = hidden ? kCAMediaTimingFunctionEaseIn : kCAMediaTimingFunctionEaseOut;
     self.hidden = NO;
     if (CGPointEqualToPoint(self.center, to)) {
         return;
