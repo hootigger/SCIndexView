@@ -80,6 +80,10 @@
     [self.sc_indexView refreshCurrentSection];
 }
 
+- (void)sc_setIndexHidden:(BOOL)hidden animated:(BOOL)animated {
+    [self.sc_indexView setIndexHidden:hidden animated:animated];
+}
+
 #pragma mark - Private Methods
 
 - (SCIndexView *)createIndexView {

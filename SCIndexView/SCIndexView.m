@@ -25,7 +25,7 @@ static inline NSInteger SCPositionOfTextLayerInY(CGFloat y, CGFloat margin, CGFl
     return biggerCenterY + smallerCenterY > 2 * y ? smaller : bigger;
 }
 */
-@interface SCIndexView ()
+@interface SCIndexView ()<CAAnimationDelegate>
 
 @property (nonatomic, strong) CAShapeLayer *searchLayer;
 @property (nonatomic, strong) NSMutableArray<CATextLayer *> *subTextLayers;
@@ -109,6 +109,62 @@ static inline NSInteger SCPositionOfTextLayerInY(CGFloat y, CGFloat margin, CGFl
 - (void)refreshCurrentSection {
     [self onActionWithScroll];
 }
+
+- (void)setIndexHidden:(BOOL)hidden animated:(BOOL)animated {
+    CGSize size = self.frame.size;
+    CGPoint start = CGPointMake(size.width * 0.5, size.height * 0.5);
+    CGPoint end = CGPointMake(start.x + 20, start.y);
+    CGPoint from = hidden ? start : end;
+    CGPoint to = hidden ? end : start;
+    if (CGPointEqualToPoint(self.center, to)) {
+        return;
+    }
+    if (animated) {
+        CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"position"];
+        animation.fromValue = [NSValue valueWithCGPoint: from];
+        animation.toValue = [NSValue valueWithCGPoint: to];
+        animation.duration = 0.25f;
+        animation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseIn];
+        animation.delegate = self;
+        animation.fillMode = kCAFillModeForwards;
+        animation.removedOnCompletion = NO;
+        [animation setValue:[NSValue valueWithCGPoint: to] forKey:@"endPointKey"];
+        NSString *key = hidden ? @"hiddenAnimationKey" : @"showAnimationKey";
+        [animation setValue:key forKey:@"animationKey"];
+        [self.layer addAnimation:animation forKey:key];
+    }
+    else {
+        [CATransaction begin];
+        [CATransaction setDisableActions:NO];// 关闭layer的默认动画
+        self.layer.position = hidden ? to : from;
+        [CATransaction commit];
+    }
+    
+    
+}
+
+#pragma mark - CAAnimationDelegate
+
+- (void)animationDidStart:(CAAnimation *)anim {
+//    NSLog(@"动画开始啦");
+}
+
+- (void)animationDidStop:(CAAnimation *)anim finished:(BOOL)flag {
+    
+    if (flag) {
+        [CATransaction begin];
+        [CATransaction setDisableActions:NO];// 关闭layer的默认动画
+        CGPoint end = [[anim valueForKey:@"endPointKey"] CGPointValue];
+        //NSLog(@"动画结束啦-1, end = %@, position = %@",NSStringFromCGPoint(end),NSStringFromCGPoint(self.layer.position));
+        self.layer.position = end;
+//        NSLog(@"动画结束啦-2, end = %@, position = %@",NSStringFromCGPoint(end),NSStringFromCGPoint(self.layer.position));
+        [CATransaction commit];
+        
+        NSString *key = (NSString *)[anim valueForKey:@"animationKey"];
+        [self.layer removeAnimationForKey:key];
+    }
+}
+
 
 #pragma mark - 
 

@@ -42,4 +42,7 @@
 // 手动更新IndexView的CurrentSection
 - (void)sc_refreshCurrentSectionOfIndexView;
 
+//FIXME: 添加动画
+- (void)sc_setIndexHidden:(BOOL)hidden animated:(BOOL)animated;
+
 @end
