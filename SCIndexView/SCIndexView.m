@@ -255,11 +255,15 @@ static inline NSInteger SCPositionOfTextLayerInY(CGFloat y, CGFloat margin, CGFl
         }
     }
     
+    NSInteger firstVisibleSection = self.tableView.indexPathsForVisibleRows.firstObject.section;
     CGFloat insetTop = kSCIndexViewInsetTop;
-    CGPoint contentOffset = self.tableView.contentOffset;
-    CGPoint point = CGPointMake(contentOffset.x, contentOffset.y + insetTop);
-    NSIndexPath *indexPath = [self.tableView indexPathForRowAtPoint:point];
-    currentSection = indexPath.section;
+    for (NSInteger section = firstVisibleSection; section < self.tableView.numberOfSections; section++) {
+        CGRect sectionFrame = [self.tableView rectForSection:section];
+        if (sectionFrame.origin.y + sectionFrame.size.height - self.tableView.contentOffset.y > insetTop) {
+            currentSection = section;
+            break;
+        }
+    }
     
     BOOL selectSearchLayer = NO;
     if (currentSection == 0 && self.searchLayer && currentSection < self.tableView.numberOfSections) {
@@ -292,12 +296,11 @@ static inline NSInteger SCPositionOfTextLayerInY(CGFloat y, CGFloat margin, CGFl
     } else {
         NSInteger currentSection = self.currentSection + self.startSection;
         if (currentSection >= 0 && currentSection < self.tableView.numberOfSections) {
-            CGRect rect = [self.tableView rectForSection:currentSection];
-            CGFloat offsetY = rect.origin.y - insetTop;
-            CGFloat offsetMaxY = self.tableView.contentSize.height + self.tableView.contentInset.bottom - self.tableView.bounds.size.height;
-            CGPoint contentOffset = self.tableView.contentOffset;
-            contentOffset.y = offsetY < offsetMaxY ? offsetY : offsetMaxY;
-            self.tableView.contentOffset = contentOffset;
+            NSUInteger rowCountInSection = [self.tableView numberOfRowsInSection:currentSection];
+            if (rowCountInSection > 0) {
+                NSIndexPath *indexPath = [NSIndexPath indexPathForRow:0 inSection:currentSection];
+                [self.tableView scrollToRowAtIndexPath:indexPath atScrollPosition:UITableViewScrollPositionTop animated:NO];
+            }
         }
     }
     
@@ -366,7 +369,14 @@ static inline NSInteger SCPositionOfTextLayerInY(CGFloat y, CGFloat margin, CGFl
 
 - (void)showIndicator:(BOOL)animated
 {
-    if (self.currentSection < 0 || self.currentSection >= (NSInteger)self.subTextLayers.count) return;
+    if (self.currentSection >= (NSInteger)self.subTextLayers.count) return;
+    
+    if (self.currentSection < 0) {
+        if (self.currentSection == SCIndexViewSearchSection) {
+            [self hideIndicator:animated];
+        }
+        return;
+    }
     
     CATextLayer *textLayer = self.subTextLayers[self.currentSection];
     if (self.configuration.indexViewStyle == SCIndexViewStyleDefault) {
