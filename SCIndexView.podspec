@@ -9,7 +9,7 @@
 Pod::Spec.new do |s|
 
   s.name         = "SCIndexView"
-  s.version      = "2.2.3"
+  s.version      = "2.2.4"
   s.summary      = "SCIndexView provide a index view."
   s.description  = "SCIndexView provide a index view like Wechat. It is very easy."
 
