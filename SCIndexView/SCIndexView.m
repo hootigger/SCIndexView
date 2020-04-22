@@ -95,7 +95,7 @@ static inline NSInteger SCPositionOfTextLayerInY(CGFloat y, CGFloat margin, CGFl
                                    margin:(CGFloat) margin
                                     space:(CGFloat) space
 {
-    CGFloat position = (y - margin) / space - 1.0 / 2;
+    CGFloat position = (y - margin - _configuration.indexInsetTop) / space - 1.0 / 2;
     if (position <= 0) return 0;
     NSUInteger bigger = (NSUInteger)ceil(position);
     NSUInteger smaller = bigger - 1;
